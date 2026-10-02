@@ -1,0 +1,15 @@
+# Virtual environments
+.venv*/
+venv*/
+
+# Byte-compiled files and tool caches
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# Subject material -- not ours to redistribute
+not_for_submission/
