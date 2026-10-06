@@ -25,7 +25,7 @@ class MapParser:
         self._start: str | None = None
         self._end: str | None = None
         self._zones: dict[str, Zone] = {}
-        self._connections: list[Connection] = []
+        self._connections: dict[frozenset[str], Connection] = {}
 
     def _positive_int(self, line_nb: int, what: str, raw: str) -> int:
         """Convert ``raw`` to an int above zero or raise a ParseError."""
@@ -116,14 +116,28 @@ class MapParser:
     def _parse_connection(self, line_nb: int, rest: str) -> None:
         """Parse a ``connection: a-b`` line."""
         body, _, meta_text = rest.partition("[")
-        a, b = body.strip().split("-")
+        ends = body.strip().split("-")
+        if len(ends) != 2 or not all(ends):
+            raise ParseError(
+                line_nb,
+                f"expected '<a>-<b> [metadata]', got {body.strip()!r}")
+        a, b = ends
+        if a not in self._zones:
+            raise ParseError(line_nb, f"unknown zone {a!r}")
+        if b not in self._zones:
+            raise ParseError(line_nb, f"unknown zone {b!r}")
+        if a == b:
+            raise ParseError(line_nb, f"connection to itself, 'went from {a} to {b}'")
         connection = Connection(a, b)
 
         meta = self._parse_meta(meta_text)
         if "max_link_capacity" in meta:
-            connection.capacity = int(meta["max_link_capacity"])
-
-        self._connections.append(connection)
+            connection.capacity = self._positive_int(
+                line_nb, "max_link_capacity", meta["max_link_capacity"]
+            )
+        if connection.endpoints in self._connections:
+            raise ParseError(line_nb, f"duplicate connection {body.strip()!r}")
+        self._connections[connection.endpoints] = connection
 
     def _parse_meta(self, meta_text: str) -> dict[str, str]:
         """Turn a metadata block into a dict of key to value."""
@@ -144,6 +158,6 @@ class MapParser:
         network = Network(self._nb_drones, self._start, self._end)
         for zone in self._zones.values():
             network.add_zone(zone)
-        for connection in self._connections:
+        for connection in self._connections.values():
             network.add_connection(connection)
         return network
