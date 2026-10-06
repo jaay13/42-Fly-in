@@ -7,6 +7,9 @@ class FlyInError(Exception):
 
 class ParseError(FlyInError):
     """A map file broke a format rule."""
+    def __init__(self, line_nb: int, message: str) -> None:
+        self.line_nb = line_nb
+        super().__init__(f"line {line_nb}: {message}")
 
 
 class UnsolvableError(FlyInError):
