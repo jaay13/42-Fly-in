@@ -5,7 +5,10 @@ from flyin.errors import ParseError
 
 
 class MapParser:
+    """Reader for the Fly-in map file format."""
+
     def parse_file(self, path: str) -> Network:
+        """Read the map at ``path`` and return its Network."""
         nb_drones = 0
         start = ""
         end = ""
@@ -40,4 +43,3 @@ class MapParser:
         for connection in connections:
             network.add_connection(connection)
         return network
-                    
