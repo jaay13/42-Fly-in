@@ -21,25 +21,44 @@ class MapParser:
 
     def _reset(self) -> None:
         """Clear everything collected from a previous file."""
-        self._nb_drones = 0
+        self._nb_drones: int | None = None
         self._start = ""
         self._end = ""
         self._zones: list[Zone] = []
         self._connections: list[Connection] = []
 
+    def _positive_int(self, line_nb: int, what: str, raw: str) -> int:
+        try:
+            int_raw = int(raw)
+        except ValueError:
+            raise ParseError(line_nb, f"{what} must be an integer, got {raw!r}")
+        if not int_raw > 0:
+            raise ParseError(line_nb, f"{what} must be positive, got {int_raw!r}")
+        return int_raw
+
     def _parse_line(self, line_nb: int, line: str) -> None:
         """Dispatch one line of the file by its prefix."""
         raw_line = line.rstrip("\n")
         line = line.strip()
-        if not line or line.startswith("#"):
+        line = line.partition("#")[0].strip()
+        if not line:
             return
         prefix, _, rest = line.partition(":")
+
+        if self._nb_drones is None and prefix != "nb_drones":
+            raise ParseError(line_nb, "first line must be 'nb_drones: <number>'")
+        
         if prefix in ("start_hub", "end_hub", "hub"):
             self._parse_zone(line_nb, prefix, rest)
+
         elif prefix == "nb_drones":
-            self._nb_drones = int(rest)
+            if self._nb_drones is not None:
+                raise ParseError(line_nb, "nb_drones defined twice")
+            self._nb_drones = self._positive_int(line_nb, "nb_drones", rest)
+
         elif prefix == "connection":
             self._parse_connection(line_nb, rest)
+
         else:
             raise ParseError(line_nb, raw_line)
 
@@ -85,6 +104,8 @@ class MapParser:
 
     def _build(self) -> Network:
         """Create the Network from everything collected."""
+        if self._nb_drones is None:
+            raise ParseError(1, "file has no nb_drones line")
         network = Network(self._nb_drones, self._start, self._end)
         for zone in self._zones:
             network.add_zone(zone)
