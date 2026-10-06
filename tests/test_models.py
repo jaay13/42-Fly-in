@@ -1,9 +1,10 @@
+"""Tests for the static map models."""
 from flyin.graph import Network
 from flyin.models import Connection, Zone
 
 
-
 def test_linear_path() -> None:
+    """Build easy/01 by hand and check the network wiring."""
     network = Network(2, "start", "goal")
 
     network.add_zone(Zone("start", 0, 0))
