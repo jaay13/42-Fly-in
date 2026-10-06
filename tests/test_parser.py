@@ -57,6 +57,18 @@ def test_hub_capacity_is_ignored() -> None:
     ("zone_max_drones_not_int", 4, "max_drones must be an integer"),
     ("start_hub_missing", 1, "start_hub is missing"),
     ("end_hub_missing", 1, "end_hub is missing"),
+    ("connection_three_zones", 5, "expected '<a>-<b> [metadata]'"),
+    ("connection_empty_side", 5, "expected '<a>-<b> [metadata]'"),
+    ("connection_no_dash", 5, "expected '<a>-<b> [metadata]'"),
+    ("connection_unknown_zone", 5, "unknown zone 'ghost'"),
+    ("connection_before_zone", 4, "unknown zone 'a'"),
+    ("connection_duplicate_reversed", 6, "duplicate connection 'a-s'"),
+    ("connection_duplicate_same", 6, "duplicate connection 's-a'"),
+    ("connection_to_itself", 5, "zone 'a' cannot connect to itself"),
+    ("connection_capacity_zero", 5,
+     "max_link_capacity must be positive, got 0"),
+    ("connection_capacity_not_int", 5,
+     "max_link_capacity must be an integer"),
 ])
 def test_broken_map(name: str, line_nb: int, reason: str) -> None:
     """Each broken map raises a ParseError naming the line and cause."""
