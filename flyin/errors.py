@@ -1,4 +1,4 @@
-"""Exception hierarchy (parse errors with line number, unsolvable map, ...)."""
+"""Fly-in exception hierarchy."""
 
 
 class FlyInError(Exception):

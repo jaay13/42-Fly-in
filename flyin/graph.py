@@ -1,4 +1,4 @@
-"""Graph of zones and connections (adjacency, lookup by name)."""
+"""Network: the graph of zones and connections."""
 from dataclasses import dataclass, field
 
 from flyin.models import Connection, Zone
@@ -6,16 +6,7 @@ from flyin.models import Connection, Zone
 
 @dataclass
 class Network:
-    """The whole static map: every zone and connection.
-
-    Attributes:
-        nb_drones: Number of drones that start at the start hub.
-        start: Name of the start hub.
-        end: Name of the end hub.
-        zones: Every zone, by name.
-        connections: Every connection, by frozenset({a, b}).
-        neighbours: Adjacency list: zone name -> neighbouring zone names.
-    """
+    """The static map: zones, connections and adjacency."""
 
     nb_drones: int
     start: str
