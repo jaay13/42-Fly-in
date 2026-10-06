@@ -126,7 +126,7 @@ class MapParser:
         self._connections.append(connection)
 
     def _parse_meta(self, meta_text: str) -> dict[str, str]:
-        """Turn ``key=value key=value]`` into a dict."""
+        """Turn a metadata block into a dict of key to value."""
         meta: dict[str, str] = {}
         for item in meta_text.rstrip("]").split():
             key, _, value = item.partition("=")
