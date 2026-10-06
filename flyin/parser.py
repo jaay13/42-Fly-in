@@ -22,9 +22,9 @@ class MapParser:
     def _reset(self) -> None:
         """Clear everything collected from a previous file."""
         self._nb_drones: int | None = None
-        self._start = ""
-        self._end = ""
-        self._zones: list[Zone] = []
+        self._start: str | None = None
+        self._end: str | None = None
+        self._zones: dict[str, Zone] = {}
         self._connections: list[Connection] = []
 
     def _positive_int(self, line_nb: int, what: str, raw: str) -> int:
@@ -68,21 +68,44 @@ class MapParser:
     def _parse_zone(self, line_nb: int, prefix: str, rest: str) -> None:
         """Parse a ``start_hub``, ``end_hub`` or ``hub`` line."""
         body, _, meta_text = rest.partition("[")
-        name, x, y = body.split()
-        zone = Zone(name, int(x), int(y))
+        parts = body.split()
+        if len(parts) != 3:
+            raise ParseError(line_nb, "incorrect format/ something missing")
+
+        name, x, y = parts
+        if "-" in name:
+            raise ParseError(line_nb, "forbidden character used")
+
+        try:
+            int_x = int(x)
+            int_y = int(y)
+        except ValueError:
+            raise ParseError(line_nb, "coordinate not an integer")
+        zone = Zone(name, int_x, int_y)
 
         meta = self._parse_meta(meta_text)
         if "zone" in meta:
-            zone.zone_type = ZoneType(meta["zone"])
+            try:
+                zone.zone_type = ZoneType(meta["zone"])
+            except ValueError:
+                raise ParseError(line_nb, "Invalid zone type")
         if "color" in meta:
             zone.color = meta["color"]
-        if "max_drones" in meta:
-            zone.max_drones = int(meta["max_drones"])
+        if "max_drones" in meta and prefix == "hub":
+            zone.max_drones = self._positive_int(
+                line_nb, "max_drones", meta["max_drones"]
+            )
 
-        self._zones.append(zone)
+        if name in self._zones:
+            raise ParseError(line_nb, f"duplicate zone name {name!r}")
+        self._zones[name] = zone
         if prefix == "start_hub":
+            if self._start is not None:
+                raise ParseError(line_nb, "start_hub defined twice")
             self._start = name
         elif prefix == "end_hub":
+            if self._end is not None:
+                raise ParseError(line_nb, "end_hub defined twice")
             self._end = name
 
     def _parse_connection(self, line_nb: int, rest: str) -> None:
@@ -109,8 +132,12 @@ class MapParser:
         """Create the Network from everything collected."""
         if self._nb_drones is None:
             raise ParseError(1, "file has no nb_drones line")
+        if self._start is None:
+            raise ParseError(1, "start_hub is missing")
+        if self._end is None:
+            raise ParseError(1, "end_hub is missing")
         network = Network(self._nb_drones, self._start, self._end)
-        for zone in self._zones:
+        for zone in self._zones.values():
             network.add_zone(zone)
         for connection in self._connections:
             network.add_connection(connection)
