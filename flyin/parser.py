@@ -1,6 +1,6 @@
 """Parse and validate a map file into a Network."""
 from flyin.graph import Network
-from flyin.models import Zone, Connection
+from flyin.models import Zone, Connection, ZoneType
 from flyin.errors import ParseError
 
 
@@ -22,9 +22,19 @@ class MapParser:
                     continue
                 prefix, _, rest = line.partition(":")
                 if prefix in ("start_hub", "end_hub", "hub"):
-                    body = rest.partition("[")[0]
+                    body, _, meta = rest.partition("[")
                     name, x, y = body.split()
-                    zones.append(Zone(name, int(x), int(y)))
+                    zone = Zone(name, int(x), int(y))
+
+                    for item in meta.rstrip("]").split():
+                        key, _, value = item.partition("=")
+                        if key == "zone":
+                            zone.zone_type = ZoneType(value)
+                        elif key == "color":
+                            zone.color = value
+                        elif key == "max_drones":
+                            zone.max_drones = int(value)
+                    zones.append(zone)
                     if prefix == "start_hub":
                         start = name
                     elif prefix == "end_hub":
@@ -32,9 +42,13 @@ class MapParser:
                 elif prefix == "nb_drones":
                     nb_drones = int(rest)
                 elif prefix == "connection":
-                    body = rest.partition("[")[0]
+                    body, _, meta = rest.partition("[")
                     a, b = body.strip().split("-")
-                    connections.append(Connection(a, b))
+                    connection = Connection(a, b)
+                    for item in meta.rstrip("]").split():
+                        _, _, value = item.partition("=")
+                        connection.capacity = int(value)
+                    connections.append(connection)
                 else:
                     raise ParseError(line_nbr, f"{raw_line}")
         network = Network(nb_drones, start, end)
