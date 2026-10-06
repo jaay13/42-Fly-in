@@ -127,7 +127,8 @@ class MapParser:
         if b not in self._zones:
             raise ParseError(line_nb, f"unknown zone {b!r}")
         if a == b:
-            raise ParseError(line_nb, f"connection to itself, 'went from {a} to {b}'")
+            raise ParseError(
+                line_nb, f"zone {a!r} cannot connect to itself")
         connection = Connection(a, b)
 
         meta = self._parse_meta(meta_text)
