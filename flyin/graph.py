@@ -1,7 +1,7 @@
 """Network: the graph of zones and connections."""
 from dataclasses import dataclass, field
 
-from flyin.models import Connection, Zone
+from flyin.models import Connection, Zone, ZoneType
 
 
 @dataclass
@@ -35,3 +35,20 @@ class Network:
         if name in (self.start, self.end):
             return None
         return self.zones[name].max_drones
+
+    def is_reachable(self) -> bool:
+        queue: list[str] = [self.start]
+        seen: set[str] = {self.start}
+
+        while queue:
+            zone = queue.pop(0)
+            if zone == self.end:
+                return True
+            for neighbor in self.neighbours.get(zone, []):
+                if neighbor in seen:
+                    continue
+                if self.zones[neighbor].zone_type is ZoneType.BLOCKED:
+                    continue
+                seen.add(neighbor)
+                queue.append(neighbor)
+        return False
