@@ -28,26 +28,29 @@ class MapParser:
         self._connections: list[Connection] = []
 
     def _positive_int(self, line_nb: int, what: str, raw: str) -> int:
+        """Convert ``raw`` to an int above zero or raise a ParseError."""
         try:
             int_raw = int(raw)
         except ValueError:
-            raise ParseError(line_nb, f"{what} must be an integer, got {raw!r}")
+            raise ParseError(
+                line_nb, f"{what} must be an integer, got {raw!r}")
         if not int_raw > 0:
-            raise ParseError(line_nb, f"{what} must be positive, got {int_raw!r}")
+            raise ParseError(
+                line_nb, f"{what} must be positive, got {int_raw!r}")
         return int_raw
 
     def _parse_line(self, line_nb: int, line: str) -> None:
         """Dispatch one line of the file by its prefix."""
         raw_line = line.rstrip("\n")
-        line = line.strip()
         line = line.partition("#")[0].strip()
         if not line:
             return
         prefix, _, rest = line.partition(":")
 
         if self._nb_drones is None and prefix != "nb_drones":
-            raise ParseError(line_nb, "first line must be 'nb_drones: <number>'")
-        
+            raise ParseError(
+                line_nb, "first line must be 'nb_drones: <number>'")
+
         if prefix in ("start_hub", "end_hub", "hub"):
             self._parse_zone(line_nb, prefix, rest)
 
