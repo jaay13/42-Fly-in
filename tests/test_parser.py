@@ -27,6 +27,14 @@ def test_inline_comments_are_ignored() -> None:
     assert network.neighbours == {"s": ["e"], "e": ["s"]}
 
 
+def test_hub_capacity_is_ignored() -> None:
+    """max_drones on start and end is neither validated nor applied."""
+    network = MapParser().parse_file(
+        str(VALID_MAPS / "hub_capacity_ignored.txt"))
+    assert network.capacity("s") is None
+    assert network.capacity("e") is None
+
+
 @pytest.mark.parametrize("name, line_nb, reason", [
     ("nb_drones_zero", 1, "nb_drones must be positive, got 0"),
     ("nb_drones_negative", 1, "nb_drones must be positive, got -4"),
@@ -36,6 +44,19 @@ def test_inline_comments_are_ignored() -> None:
     ("nb_drones_twice", 2, "nb_drones defined twice"),
     ("nb_drones_missing", 1, "file has no nb_drones line"),
     ("empty_file", 1, "file has no nb_drones line"),
+    ("zone_space_in_name", 4, "expected '<name> <x> <y> [metadata]'"),
+    ("zone_missing_coordinate", 4, "expected '<name> <x> <y> [metadata]'"),
+    ("zone_dash_in_name", 4, "zone name 'my-zone' must not contain '-'"),
+    ("zone_float_coordinate", 4, "coordinates must be integers"),
+    ("zone_duplicate_name", 5, "duplicate zone name 'a'"),
+    ("zone_same_name_as_start", 4, "duplicate zone name 's'"),
+    ("zone_two_start_hubs", 4, "start_hub defined twice"),
+    ("zone_two_end_hubs", 4, "end_hub defined twice"),
+    ("zone_invalid_type", 4, "invalid zone type 'lava'"),
+    ("zone_max_drones_zero", 4, "max_drones must be positive, got 0"),
+    ("zone_max_drones_not_int", 4, "max_drones must be an integer"),
+    ("start_hub_missing", 1, "start_hub is missing"),
+    ("end_hub_missing", 1, "end_hub is missing"),
 ])
 def test_broken_map(name: str, line_nb: int, reason: str) -> None:
     """Each broken map raises a ParseError naming the line and cause."""
