@@ -1,0 +1,6 @@
+# header comment
+
+nb_drones: 2   # two drones
+start_hub: s 0 0  # entrance
+end_hub: e 1 0
+connection: s-e   # only path

@@ -1,0 +1,5 @@
+# a valid comment first is fine
+start_hub: s 0 0
+nb_drones: 2
+end_hub: e 1 0
+connection: s-e
