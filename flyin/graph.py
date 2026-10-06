@@ -37,6 +37,7 @@ class Network:
         return self.zones[name].max_drones
 
     def is_reachable(self) -> bool:
+        """Return True if the end can be reached avoiding blocked zones."""
         queue: list[str] = [self.start]
         seen: set[str] = {self.start}
 
