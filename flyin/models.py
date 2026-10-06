@@ -36,3 +36,17 @@ class Connection:
     a: str
     b: str
     capacity: int = 1
+
+    @property
+    def endpoints(self) -> frozenset[str]:
+        """Return both zone names as an order-free key."""
+        return frozenset((self.a, self.b))
+
+    @property
+    def name(self) -> str:
+        """Return the connection name, e.g. ``a-b``."""
+        return f"{self.a}-{self.b}"
+
+    def other(self, zone: str) -> str:
+        """Return the zone at the opposite end from ``zone``."""
+        return self.b if zone == self.a else self.a
