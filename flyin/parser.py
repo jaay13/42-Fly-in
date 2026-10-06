@@ -1,59 +1,93 @@
 """Parse and validate a map file into a Network."""
-from flyin.graph import Network
-from flyin.models import Zone, Connection, ZoneType
 from flyin.errors import ParseError
+from flyin.graph import Network
+from flyin.models import Connection, Zone, ZoneType
 
 
 class MapParser:
     """Reader for the Fly-in map file format."""
 
+    def __init__(self) -> None:
+        """Start with an empty parsing state."""
+        self._reset()
+
     def parse_file(self, path: str) -> Network:
         """Read the map at ``path`` and return its Network."""
-        nb_drones = 0
-        start = ""
-        end = ""
-        zones: list[Zone] = []
-        connections: list[Connection] = []
+        self._reset()
         with open(path) as file:
-            for line_nbr, line in enumerate(file, start=1):
-                raw_line = line.rstrip("\n")
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                prefix, _, rest = line.partition(":")
-                if prefix in ("start_hub", "end_hub", "hub"):
-                    body, _, meta = rest.partition("[")
-                    name, x, y = body.split()
-                    zone = Zone(name, int(x), int(y))
+            for line_nb, line in enumerate(file, start=1):
+                self._parse_line(line_nb, line)
+        return self._build()
 
-                    for item in meta.rstrip("]").split():
-                        key, _, value = item.partition("=")
-                        if key == "zone":
-                            zone.zone_type = ZoneType(value)
-                        elif key == "color":
-                            zone.color = value
-                        elif key == "max_drones":
-                            zone.max_drones = int(value)
-                    zones.append(zone)
-                    if prefix == "start_hub":
-                        start = name
-                    elif prefix == "end_hub":
-                        end = name
-                elif prefix == "nb_drones":
-                    nb_drones = int(rest)
-                elif prefix == "connection":
-                    body, _, meta = rest.partition("[")
-                    a, b = body.strip().split("-")
-                    connection = Connection(a, b)
-                    for item in meta.rstrip("]").split():
-                        _, _, value = item.partition("=")
-                        connection.capacity = int(value)
-                    connections.append(connection)
-                else:
-                    raise ParseError(line_nbr, f"{raw_line}")
-        network = Network(nb_drones, start, end)
-        for zone in zones:
+    def _reset(self) -> None:
+        """Clear everything collected from a previous file."""
+        self._nb_drones = 0
+        self._start = ""
+        self._end = ""
+        self._zones: list[Zone] = []
+        self._connections: list[Connection] = []
+
+    def _parse_line(self, line_nb: int, line: str) -> None:
+        """Dispatch one line of the file by its prefix."""
+        raw_line = line.rstrip("\n")
+        line = line.strip()
+        if not line or line.startswith("#"):
+            return
+        prefix, _, rest = line.partition(":")
+        if prefix in ("start_hub", "end_hub", "hub"):
+            self._parse_zone(line_nb, prefix, rest)
+        elif prefix == "nb_drones":
+            self._nb_drones = int(rest)
+        elif prefix == "connection":
+            self._parse_connection(line_nb, rest)
+        else:
+            raise ParseError(line_nb, raw_line)
+
+    def _parse_zone(self, line_nb: int, prefix: str, rest: str) -> None:
+        """Parse a ``start_hub``, ``end_hub`` or ``hub`` line."""
+        body, _, meta_text = rest.partition("[")
+        name, x, y = body.split()
+        zone = Zone(name, int(x), int(y))
+
+        meta = self._parse_meta(meta_text)
+        if "zone" in meta:
+            zone.zone_type = ZoneType(meta["zone"])
+        if "color" in meta:
+            zone.color = meta["color"]
+        if "max_drones" in meta:
+            zone.max_drones = int(meta["max_drones"])
+
+        self._zones.append(zone)
+        if prefix == "start_hub":
+            self._start = name
+        elif prefix == "end_hub":
+            self._end = name
+
+    def _parse_connection(self, line_nb: int, rest: str) -> None:
+        """Parse a ``connection: a-b`` line."""
+        body, _, meta_text = rest.partition("[")
+        a, b = body.strip().split("-")
+        connection = Connection(a, b)
+
+        meta = self._parse_meta(meta_text)
+        if "max_link_capacity" in meta:
+            connection.capacity = int(meta["max_link_capacity"])
+
+        self._connections.append(connection)
+
+    def _parse_meta(self, meta_text: str) -> dict[str, str]:
+        """Turn ``key=value key=value]`` into a dict."""
+        meta: dict[str, str] = {}
+        for item in meta_text.rstrip("]").split():
+            key, _, value = item.partition("=")
+            meta[key] = value
+        return meta
+
+    def _build(self) -> Network:
+        """Create the Network from everything collected."""
+        network = Network(self._nb_drones, self._start, self._end)
+        for zone in self._zones:
             network.add_zone(zone)
-        for connection in connections:
+        for connection in self._connections:
             network.add_connection(connection)
         return network
