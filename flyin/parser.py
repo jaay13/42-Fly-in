@@ -70,17 +70,21 @@ class MapParser:
         body, _, meta_text = rest.partition("[")
         parts = body.split()
         if len(parts) != 3:
-            raise ParseError(line_nb, "incorrect format/ something missing")
+            raise ParseError(
+                line_nb,
+                f"expected '<name> <x> <y> [metadata]', got {body.strip()!r}")
 
         name, x, y = parts
         if "-" in name:
-            raise ParseError(line_nb, "forbidden character used")
+            raise ParseError(
+                line_nb, f"zone name {name!r} must not contain '-'")
 
         try:
             int_x = int(x)
             int_y = int(y)
         except ValueError:
-            raise ParseError(line_nb, "coordinate not an integer")
+            raise ParseError(
+                line_nb, f"coordinates must be integers, got {x!r} {y!r}")
         zone = Zone(name, int_x, int_y)
 
         meta = self._parse_meta(meta_text)
@@ -88,7 +92,8 @@ class MapParser:
             try:
                 zone.zone_type = ZoneType(meta["zone"])
             except ValueError:
-                raise ParseError(line_nb, "Invalid zone type")
+                raise ParseError(
+                    line_nb, f"invalid zone type {meta['zone']!r}")
         if "color" in meta:
             zone.color = meta["color"]
         if "max_drones" in meta and prefix == "hub":
