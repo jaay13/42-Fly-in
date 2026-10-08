@@ -6,7 +6,10 @@ from flyin import FlyInError, MapParser
 
 
 class FlyIn:
-    def run(self):
+    """Command-line front end of the program."""
+
+    def run(self) -> None:
+        """Load the map named in ``sys.argv`` and print it."""
         if len(sys.argv) == 2:
             try:
                 network = MapParser().parse_file(sys.argv[1])
@@ -23,7 +26,7 @@ class FlyIn:
                     print(connections)
         else:
             print("usage: python3 fly_in.py <map_file>", file=sys.stderr)
-            sys.exit(1)        
+            sys.exit(1)
 
 
 if __name__ == "__main__":
