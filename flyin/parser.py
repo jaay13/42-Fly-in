@@ -87,15 +87,17 @@ class MapParser:
                 line_nb, f"coordinates must be integers, got {x!r} {y!r}")
         zone = Zone(name, int_x, int_y)
 
-        meta = self._parse_meta(meta_text)
+        meta = self._parse_meta(line_nb, meta_text, {"zone", "color", "max_drones"})
         if "zone" in meta:
             try:
                 zone.zone_type = ZoneType(meta["zone"])
             except ValueError:
                 raise ParseError(
                     line_nb, f"invalid zone type {meta['zone']!r}")
+
         if "color" in meta:
             zone.color = meta["color"]
+
         if "max_drones" in meta and prefix == "hub":
             zone.max_drones = self._positive_int(
                 line_nb, "max_drones", meta["max_drones"]
@@ -104,10 +106,12 @@ class MapParser:
         if name in self._zones:
             raise ParseError(line_nb, f"duplicate zone name {name!r}")
         self._zones[name] = zone
+
         if prefix == "start_hub":
             if self._start is not None:
                 raise ParseError(line_nb, "start_hub defined twice")
             self._start = name
+
         elif prefix == "end_hub":
             if self._end is not None:
                 raise ParseError(line_nb, "end_hub defined twice")
@@ -121,6 +125,7 @@ class MapParser:
             raise ParseError(
                 line_nb,
                 f"expected '<a>-<b> [metadata]', got {body.strip()!r}")
+
         a, b = ends
         if a not in self._zones:
             raise ParseError(line_nb, f"unknown zone {a!r}")
@@ -131,20 +136,31 @@ class MapParser:
                 line_nb, f"zone {a!r} cannot connect to itself")
         connection = Connection(a, b)
 
-        meta = self._parse_meta(meta_text)
+        meta = self._parse_meta(
+            line_nb, meta_text, {"max_link_capacity"}
+        )
         if "max_link_capacity" in meta:
             connection.capacity = self._positive_int(
                 line_nb, "max_link_capacity", meta["max_link_capacity"]
             )
+
         if connection.endpoints in self._connections:
             raise ParseError(line_nb, f"duplicate connection {body.strip()!r}")
         self._connections[connection.endpoints] = connection
 
-    def _parse_meta(self, meta_text: str) -> dict[str, str]:
+    def _parse_meta(self, line_nb: int, meta_text: str, allowed: set[str]) -> dict[str, str]:
         """Turn a metadata block into a dict of key to value."""
         meta: dict[str, str] = {}
+        if meta_text and not meta_text.rstrip().endswith("]"):
+            raise ParseError(line_nb, "metadata block must end with ']'")
         for item in meta_text.rstrip("]").split():
-            key, _, value = item.partition("=")
+            key, sep, value = item.partition("=")
+            if sep == "" or value == "":
+                raise ParseError(line_nb, f"metadata entry {item!r} must be key=value")
+            if key not in allowed:
+                raise ParseError(line_nb, f"unknown metadata key {key!r}")
+            if key in meta:
+                raise ParseError(line_nb, f"metadata key {key!r} repeated")
             meta[key] = value
         return meta
 
@@ -156,6 +172,7 @@ class MapParser:
             raise ParseError(1, "start_hub is missing")
         if self._end is None:
             raise ParseError(1, "end_hub is missing")
+
         network = Network(self._nb_drones, self._start, self._end)
         for zone in self._zones.values():
             network.add_zone(zone)
