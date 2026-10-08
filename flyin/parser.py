@@ -157,7 +157,13 @@ class MapParser:
         meta: dict[str, str] = {}
         if meta_text and not meta_text.rstrip().endswith("]"):
             raise ParseError(line_nb, "metadata block must end with ']'")
-        for item in meta_text.rstrip("]").split():
+
+        content = meta_text.rstrip()[:-1]
+        if "[" in content or "]" in content:
+            raise ParseError(
+                line_nb, f"unexpected bracket in metadata block {content!r}"
+            )
+        for item in content.split():
             key, sep, value = item.partition("=")
             if sep == "" or value == "":
                 raise ParseError(
