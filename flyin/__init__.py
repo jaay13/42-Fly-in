@@ -1,8 +1,8 @@
 """Fly-in drone routing package."""
-from .errors import FlyInError, ParseError, UnsolvableError
-from .graph import Network
-from .models import Connection, Zone, ZoneType
-from .parser import MapParser
+from flyin.errors import FlyInError, ParseError, UnsolvableError
+from flyin.graph import Network
+from flyin.models import Connection, Zone, ZoneType
+from flyin.parser import MapParser
 
 __all__ = [
     "Connection",
