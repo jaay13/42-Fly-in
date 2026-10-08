@@ -1,7 +1,7 @@
 """Parse and validate a map file into a Network."""
-from flyin.errors import ParseError
-from flyin.graph import Network
-from flyin.models import Connection, Zone, ZoneType
+from .errors import ParseError
+from .graph import Network
+from .models import Connection, Zone, ZoneType
 
 
 class MapParser:

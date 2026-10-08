@@ -1,7 +1,7 @@
 """Network: the graph of zones and connections."""
 from dataclasses import dataclass, field
 
-from flyin.models import Connection, Zone, ZoneType
+from .models import Connection, Zone, ZoneType
 
 
 @dataclass
