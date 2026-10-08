@@ -87,7 +87,9 @@ class MapParser:
                 line_nb, f"coordinates must be integers, got {x!r} {y!r}")
         zone = Zone(name, int_x, int_y)
 
-        meta = self._parse_meta(line_nb, meta_text, {"zone", "color", "max_drones"})
+        meta = self._parse_meta(
+            line_nb, meta_text, {"zone", "color", "max_drones"}
+        )
         if "zone" in meta:
             try:
                 zone.zone_type = ZoneType(meta["zone"])
@@ -148,7 +150,9 @@ class MapParser:
             raise ParseError(line_nb, f"duplicate connection {body.strip()!r}")
         self._connections[connection.endpoints] = connection
 
-    def _parse_meta(self, line_nb: int, meta_text: str, allowed: set[str]) -> dict[str, str]:
+    def _parse_meta(
+        self, line_nb: int, meta_text: str, allowed: set[str]
+    ) -> dict[str, str]:
         """Turn a metadata block into a dict of key to value."""
         meta: dict[str, str] = {}
         if meta_text and not meta_text.rstrip().endswith("]"):
@@ -156,7 +160,8 @@ class MapParser:
         for item in meta_text.rstrip("]").split():
             key, sep, value = item.partition("=")
             if sep == "" or value == "":
-                raise ParseError(line_nb, f"metadata entry {item!r} must be key=value")
+                raise ParseError(
+                    line_nb, f"metadata entry {item!r} must be key=value")
             if key not in allowed:
                 raise ParseError(line_nb, f"unknown metadata key {key!r}")
             if key in meta:
