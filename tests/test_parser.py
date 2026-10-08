@@ -84,6 +84,10 @@ def test_hub_capacity_is_ignored() -> None:
     ("meta_link_key_on_zone", 4,
      "unknown metadata key 'max_link_capacity'"),
     ("meta_zone_key_on_connection", 5, "unknown metadata key 'color'"),
+    ("meta_double_bracket", 4,
+     "unexpected bracket in metadata block 'color=red]'"),
+    ("meta_nested_bracket", 4,
+     "unexpected bracket in metadata block 'zone=normal [color=red'"),
 ])
 def test_broken_map(name: str, line_nb: int, reason: str) -> None:
     """Each broken map raises a ParseError naming the line and cause."""
