@@ -27,6 +27,12 @@ def test_inline_comments_are_ignored() -> None:
     assert network.neighbours == {"s": ["e"], "e": ["s"]}
 
 
+def test_empty_metadata_block_is_allowed() -> None:
+    """An empty ``[]`` leaves the zone at its defaults."""
+    network = MapParser().parse_file(str(VALID_MAPS / "empty_metadata.txt"))
+    assert network.zones["a"].max_drones == 1
+
+
 def test_hub_capacity_is_ignored() -> None:
     """max_drones on start and end is neither validated nor applied."""
     network = MapParser().parse_file(
@@ -69,6 +75,15 @@ def test_hub_capacity_is_ignored() -> None:
      "max_link_capacity must be positive, got 0"),
     ("connection_capacity_not_int", 5,
      "max_link_capacity must be an integer"),
+    ("meta_no_equals", 4, "metadata entry 'zone' must be key=value"),
+    ("meta_empty_value", 4, "metadata entry 'zone=' must be key=value"),
+    ("meta_unknown_key", 4, "unknown metadata key 'speed'"),
+    ("meta_repeated_key", 4, "metadata key 'color' repeated"),
+    ("meta_unclosed", 4, "metadata block must end with ']'"),
+    ("meta_text_after_block", 4, "metadata block must end with ']'"),
+    ("meta_link_key_on_zone", 4,
+     "unknown metadata key 'max_link_capacity'"),
+    ("meta_zone_key_on_connection", 5, "unknown metadata key 'color'"),
 ])
 def test_broken_map(name: str, line_nb: int, reason: str) -> None:
     """Each broken map raises a ParseError naming the line and cause."""
