@@ -29,8 +29,6 @@ class Scheduler:
             return True
         key = (zone, turn)
         return capacity > self.zone_use.get(key, 0)
-            
-
 
     def _link_has_room(self, a: str, b: str, turn: int) -> bool:
         """Return True if one more drone can start crossing ``a-b``."""
