@@ -38,4 +38,10 @@ class Scheduler:
 
     def _book(self, route: Route) -> None:
         """Reserve every zone and link slot the route uses."""
-        raise NotImplementedError
+        for (src, depart), (dst, arrive) in zip(route, route[1:]):
+            zone_key = (dst, arrive)
+            self.zone_use[zone_key] = self.zone_use.get(zone_key, 0) + 1
+
+            if src != dst:
+                link_key = (self.network.link(src, dst).endpoints, depart + 1)
+                self.link_use[link_key] = self.link_use.get(link_key, 0) + 1
