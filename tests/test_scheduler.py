@@ -73,3 +73,21 @@ def test_start_and_end_never_fill_up() -> None:
     for _ in range(10):
         s._book([("start", 0), ("start", 1)])
     assert s._zone_has_room("start", 1)
+
+
+def test_search_finds_earliest_arrival() -> None:
+    """On an empty calendar the first drone takes the shortest route."""
+    s = scheduler_for(FORK)
+    route = s._search()
+    assert route[0] == ("start", 0)
+    assert route[-1] == ("goal", 3)
+
+
+def test_search_waits_when_junction_is_full() -> None:
+    """With junction full at turn 1, the third drone arrives a turn later."""
+    s = scheduler_for(FORK)
+    for _ in range(2):
+        s._book(s._search())
+    route = s._search()
+    assert route[1] == ("start", 1)
+    assert route[-1] == ("goal", 4)
