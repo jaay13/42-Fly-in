@@ -1,6 +1,7 @@
 """Plan every drone's route through a shared booking calendar."""
 
 from flyin.graph import Network
+from flyin.models import ZoneType
 
 Route = list[tuple[str, int]]
 
@@ -18,8 +19,45 @@ class Scheduler:
         """Return one route per drone, in drone order."""
         raise NotImplementedError
 
+    def _build_route(
+    self, 
+    came_from: dict[tuple[str, int], tuple[str, int] | None],
+    goal: tuple[str, int]
+    ) -> list[str]:
+        """Walk ``came_from`` back from ``goal`` and return the route."""
+        path: list[str] = []
+        zone: tuple[str, int] | None = goal
+        while zone is not None:
+            path.append(zone)
+            zone = came_from[zone]
+        return path[::-1]
+
     def _search(self) -> Route:
         """Return the earliest-arriving route for the next drone."""
+        start = (self.network.start, 0)
+        queue: list[tuple[str, int]] = [start]
+        came_from: dict[tuple[str, int], tuple[str, int] | None] = {start: None}
+        while queue:
+            zone, turn = queue.pop(0)
+            if zone == self.network.end:
+                return self._build_route(came_from, (zone, turn))
+
+            moves = [(zone, turn + 1)]
+            for neighbor in self.network.neighbours.get(zone, []):
+                if self.network.zones[neighbor].zone_type is ZoneType.BLOCKED:                                # same blocked check as Pathfinder
+                    continue
+                moves.append((neighbor, turn + 1))
+
+            for state in moves:
+                nxt, nxt_turn = state
+                if state in came_from:
+                    continue
+                if not self._zone_has_room(nxt, nxt_turn):
+                    continue
+                if nxt != zone and not self._link_has_room(zone, nxt, turn + 1):
+                    continue
+                came_from[state] = (zone, turn)
+                queue.append(state)
         raise NotImplementedError
 
     def _zone_has_room(self, zone: str, turn: int) -> bool:
