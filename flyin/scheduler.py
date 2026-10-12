@@ -3,7 +3,8 @@
 from flyin.graph import Network
 from flyin.models import ZoneType
 
-Route = list[tuple[str, int]]
+State = tuple[str, int]
+Route = list[State]
 
 
 class Scheduler:
@@ -20,13 +21,11 @@ class Scheduler:
         raise NotImplementedError
 
     def _build_route(
-    self, 
-    came_from: dict[tuple[str, int], tuple[str, int] | None],
-    goal: tuple[str, int]
-    ) -> list[str]:
+        self, came_from: dict[State, State | None], goal: State
+    ) -> Route:
         """Walk ``came_from`` back from ``goal`` and return the route."""
-        path: list[str] = []
-        zone: tuple[str, int] | None = goal
+        path: Route = []
+        zone: State | None = goal
         while zone is not None:
             path.append(zone)
             zone = came_from[zone]
@@ -34,9 +33,9 @@ class Scheduler:
 
     def _search(self) -> Route:
         """Return the earliest-arriving route for the next drone."""
-        start = (self.network.start, 0)
-        queue: list[tuple[str, int]] = [start]
-        came_from: dict[tuple[str, int], tuple[str, int] | None] = {start: None}
+        start: State = (self.network.start, 0)
+        queue: list[State] = [start]
+        came_from: dict[State, State | None] = {start: None}
         while queue:
             zone, turn = queue.pop(0)
             if zone == self.network.end:
@@ -44,7 +43,7 @@ class Scheduler:
 
             moves = [(zone, turn + 1)]
             for neighbor in self.network.neighbours.get(zone, []):
-                if self.network.zones[neighbor].zone_type is ZoneType.BLOCKED:                                # same blocked check as Pathfinder
+                if self.network.zones[neighbor].zone_type is ZoneType.BLOCKED:
                     continue
                 moves.append((neighbor, turn + 1))
 
@@ -54,7 +53,9 @@ class Scheduler:
                     continue
                 if not self._zone_has_room(nxt, nxt_turn):
                     continue
-                if nxt != zone and not self._link_has_room(zone, nxt, turn + 1):
+                if nxt != zone and not self._link_has_room(
+                    zone, nxt, turn + 1
+                ):
                     continue
                 came_from[state] = (zone, turn)
                 queue.append(state)
