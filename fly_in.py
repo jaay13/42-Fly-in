@@ -9,7 +9,7 @@ class FlyIn:
     """Command-line front end of the program."""
 
     def run(self) -> None:
-        """Load the map named in ``sys.argv`` and print it."""
+        """Plan the map named in ``sys.argv`` and print each turn."""
         if len(sys.argv) == 2:
             try:
                 network = MapParser().parse_file(sys.argv[1])
