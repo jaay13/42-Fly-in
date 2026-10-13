@@ -10,7 +10,8 @@ class FlyIn:
 
     def run(self) -> None:
         """Plan the map named in ``sys.argv`` and print each turn."""
-        if len(sys.argv) == 2:
+        visual = len(sys.argv) == 3 and sys.argv[2] == "--visual"
+        if len(sys.argv) == 2 or visual:
             try:
                 network = MapParser().parse_file(sys.argv[1])
                 routes = Scheduler(network).plan()
