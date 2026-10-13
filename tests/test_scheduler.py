@@ -1,7 +1,9 @@
 """Scheduler tests: booking calendar and room checks."""
 from pathlib import Path
 
-from flyin import MapParser
+import pytest
+
+from flyin import MapParser, UnsolvableError
 from flyin.scheduler import Scheduler
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -107,3 +109,26 @@ def test_search_prefers_earlier_arrival_over_restricted() -> None:
     """The heap pops the turn-2 goal before the turn-3 one."""
     s = scheduler_for(VALID_MAPS / "restricted_detour.txt")
     assert s._search() == [("s", 0), ("a", 1), ("g", 2)]
+
+
+def test_plan_gives_one_route_per_drone() -> None:
+    """Every drone gets a route from start to end."""
+    s = scheduler_for(FORK)
+    routes = s.plan()
+    assert len(routes) == s.network.nb_drones
+    for route in routes:
+        assert route[0] == ("start", 0)
+        assert route[-1][0] == "goal"
+
+
+def test_plan_hits_the_fork_optimum() -> None:
+    """Four drones through a two-wide junction finish by turn 4."""
+    routes = scheduler_for(FORK).plan()
+    assert max(route[-1][1] for route in routes) == 4
+
+
+def test_plan_raises_on_unreachable_end() -> None:
+    """An unreachable end raises instead of waiting forever."""
+    s = scheduler_for(VALID_MAPS / "end_not_connected.txt")
+    with pytest.raises(UnsolvableError):
+        s.plan()
