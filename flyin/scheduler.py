@@ -1,5 +1,6 @@
 """Plan every drone's route through a shared booking calendar."""
 
+import heapq
 from flyin.graph import Network
 from flyin.models import ZoneType
 
@@ -34,10 +35,10 @@ class Scheduler:
     def _search(self) -> Route:
         """Return the earliest-arriving route for the next drone."""
         start: State = (self.network.start, 0)
-        queue: list[State] = [start]
+        queue: list[tuple[int, str]] = [(0, self.network.start)]
         came_from: dict[State, State | None] = {start: None}
         while queue:
-            zone, turn = queue.pop(0)
+            turn, zone = heapq.heappop(queue)
             if zone == self.network.end:
                 return self._build_route(came_from, (zone, turn))
 
@@ -45,8 +46,7 @@ class Scheduler:
             for neighbor in self.network.neighbours.get(zone, []):
                 if self.network.zones[neighbor].zone_type is ZoneType.BLOCKED:
                     continue
-                moves.append((neighbor, turn + 1))
-
+                moves.append((neighbor, turn + self.network.zones[neighbor].move_cost))
             for state in moves:
                 nxt, nxt_turn = state
                 if state in came_from:
@@ -58,7 +58,7 @@ class Scheduler:
                 ):
                     continue
                 came_from[state] = (zone, turn)
-                queue.append(state)
+                heapq.heappush(queue, (nxt_turn, nxt))
         raise NotImplementedError
 
     def _zone_has_room(self, zone: str, turn: int) -> bool:
