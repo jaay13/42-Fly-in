@@ -2,14 +2,15 @@
 
 import sys
 
-from flyin import FlyInError, MapParser, Scheduler, Simulation, Display
+from flyin import (Display, FlyInError, MapParser, MapView, Scheduler,
+                   Simulation)
 
 
 class FlyIn:
     """Command-line front end of the program."""
 
     def run(self) -> None:
-        """Plan the map named in ``sys.argv`` and print each turn."""
+        """Plan the map in ``sys.argv``; print each turn or animate it."""
         visual = len(sys.argv) == 3 and sys.argv[2] == "--visual"
         if len(sys.argv) == 2 or visual:
             try:
@@ -20,11 +21,15 @@ class FlyIn:
                 sys.exit(1)
             else:
                 simulation = Simulation(network, routes)
-                display = Display(network, sys.stdout.isatty())
-                for line in simulation.lines():
-                    print(display.paint(line))
+                if visual:
+                    MapView(network, simulation).play()
+                else:
+                    display = Display(network, sys.stdout.isatty())
+                    for line in simulation.lines():
+                        print(display.paint(line))
         else:
-            print("usage: python3 fly_in.py <map_file>", file=sys.stderr)
+            print("usage: python3 fly_in.py <map_file> [--visual]",
+                  file=sys.stderr)
             sys.exit(1)
 
 
