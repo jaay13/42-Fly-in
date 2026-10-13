@@ -7,6 +7,7 @@ from flyin.scheduler import Scheduler
 ROOT = Path(__file__).resolve().parent.parent
 FORK = ROOT / "maps" / "easy" / "02_simple_fork.txt"
 PRIORITY = ROOT / "maps" / "medium" / "03_priority_puzzle.txt"
+VALID_MAPS = Path(__file__).parent / "valid_maps"
 
 
 def scheduler_for(path: Path) -> Scheduler:
@@ -91,3 +92,18 @@ def test_search_waits_when_junction_is_full() -> None:
     route = s._search()
     assert route[1] == ("start", 1)
     assert route[-1] == ("goal", 4)
+
+
+def test_restricted_zone_costs_two_turns() -> None:
+    """Entering a restricted zone lands two turns later."""
+    s = scheduler_for(PRIORITY)
+    s._book(s._search())
+    s._book(s._search())
+    route = s._search()
+    assert ("slow_path1", 2) in route
+
+
+def test_search_prefers_earlier_arrival_over_restricted() -> None:
+    """The heap pops the turn-2 goal before the turn-3 one."""
+    s = scheduler_for(VALID_MAPS / "restricted_detour.txt")
+    assert s._search() == [("s", 0), ("a", 1), ("g", 2)]
