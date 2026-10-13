@@ -46,7 +46,8 @@ class Scheduler:
             for neighbor in self.network.neighbours.get(zone, []):
                 if self.network.zones[neighbor].zone_type is ZoneType.BLOCKED:
                     continue
-                moves.append((neighbor, turn + self.network.zones[neighbor].move_cost))
+                cost = self.network.zones[neighbor].move_cost
+                moves.append((neighbor, turn + cost))
             for state in moves:
                 nxt, nxt_turn = state
                 if state in came_from:
