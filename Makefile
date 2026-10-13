@@ -9,7 +9,7 @@ MYPY_FLAGS = --warn-return-any \
 			--check-untyped-defs
 
 install:
-	pip install -r requirements-dev.txt
+	python3 -m pip install -r requirements-dev.txt
 
 run:
 	python3 fly_in.py $(MAP)
