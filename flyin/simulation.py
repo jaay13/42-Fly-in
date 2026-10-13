@@ -27,3 +27,7 @@ class Simulation:
                 pages[arrive].append(f"D{drone_id}-{dst}")
 
         return [" ".join(page) for page in pages[1:]]
+
+    def positions(self, turn: int) -> dict[str, list[int]]:
+        """Return the drone ids in each zone or in-flight link at ``turn``."""
+        raise NotImplementedError
