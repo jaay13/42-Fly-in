@@ -41,6 +41,10 @@ class Display:
             return None
         return f"\033[38;5;{self.CODES[color.lower()]}m"
 
+    def code(self, color: str | None) -> str:
+        """Return the escape code for ``color``, or "" if it is unknown."""
+        return self._start(color) or ""
+
     def paint(self, line: str) -> str:
         """Return ``line`` with every move coloured like its zone."""
         if not self.enabled:
