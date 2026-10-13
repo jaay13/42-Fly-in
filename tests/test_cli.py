@@ -47,3 +47,18 @@ def test_wrong_argument_count_prints_usage() -> None:
     result = run()
     assert result.returncode == 1
     assert "usage" in result.stderr
+
+
+def test_visual_flag_plays_the_map() -> None:
+    """``--visual`` draws every turn and exits with 0."""
+    result = run("maps/easy/02_simple_fork.txt", "--visual")
+    assert result.returncode == 0
+    assert "Turn 4/4" in result.stdout
+    assert "delivered 4/4" in result.stdout
+
+
+def test_unknown_flag_prints_usage() -> None:
+    """Any other third argument is rejected."""
+    result = run("maps/easy/02_simple_fork.txt", "--oops")
+    assert result.returncode == 1
+    assert "usage" in result.stderr
