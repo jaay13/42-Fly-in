@@ -30,4 +30,15 @@ class Simulation:
 
     def positions(self, turn: int) -> dict[str, list[int]]:
         """Return the drone ids in each zone or in-flight link at ``turn``."""
-        raise NotImplementedError
+        where: dict[str, list[int]] = {}
+        for drone_id, route in enumerate(self.routes, start=1):
+            spot = route[-1][0]
+            for (src, depart), (dst, arrive) in zip(route, route[1:]):
+                if depart <= turn < arrive:
+                    if turn == depart:
+                        spot = src
+                    else:
+                        spot = self.network.link(src, dst).name
+                    break
+            where.setdefault(spot, []).append(drone_id)
+        return where
