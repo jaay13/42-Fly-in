@@ -3,6 +3,7 @@
 import heapq
 from flyin.graph import Network
 from flyin.models import ZoneType
+from flyin.pathfinder import Pathfinder
 
 State = tuple[str, int]
 Route = list[State]
@@ -19,7 +20,13 @@ class Scheduler:
 
     def plan(self) -> list[Route]:
         """Return one route per drone, in drone order."""
-        raise NotImplementedError
+        Pathfinder(self.network).shortest_path()
+        routes: list[Route] = []
+        for _ in range(self.network.nb_drones):
+            route = self._search()
+            self._book(route)
+            routes.append(route)
+        return routes
 
     def _build_route(
         self, came_from: dict[State, State | None], goal: State
