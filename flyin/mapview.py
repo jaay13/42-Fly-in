@@ -72,10 +72,12 @@ class MapView:
     def _header(self, turn: int, where: dict[str, list[int]]) -> str:
         """Return the turn counter, the output line and the delivery count."""
         done = len(where.get(self.network.end, []))
-        line = self.lines[turn - 1] if turn > 0 else "(all drones at start)"
+        if turn > 0:
+            line = self.display.paint(self.lines[turn - 1])
+        else:
+            line = "(all drones at start)"
         return (f"Turn {turn}/{len(self.lines)}   "
-                f"delivered {done}/{self.network.nb_drones}\n"
-                f"{self.display.paint(line)}")
+                f"delivered {done}/{self.network.nb_drones}\n{line}")
 
     def _legend(self) -> str:
         """Return the key to the symbols on the map."""
