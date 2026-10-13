@@ -1,4 +1,5 @@
 """Fly-in drone routing package."""
+from flyin.display import Display
 from flyin.errors import FlyInError, ParseError, UnsolvableError
 from flyin.graph import Network
 from flyin.models import Connection, Zone, ZoneType
@@ -8,6 +9,7 @@ from flyin.simulation import Simulation
 
 __all__ = [
     "Connection",
+    "Display",
     "FlyInError",
     "MapParser",
     "Network",

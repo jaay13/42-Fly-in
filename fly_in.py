@@ -2,7 +2,7 @@
 
 import sys
 
-from flyin import FlyInError, MapParser, Scheduler, Simulation
+from flyin import FlyInError, MapParser, Scheduler, Simulation, Display
 
 
 class FlyIn:
@@ -19,8 +19,9 @@ class FlyIn:
                 sys.exit(1)
             else:
                 simulation = Simulation(network, routes)
+                display = Display(network, sys.stdout.isatty())
                 for line in simulation.lines():
-                    print(line)
+                    print(display.paint(line))
         else:
             print("usage: python3 fly_in.py <map_file>", file=sys.stderr)
             sys.exit(1)
