@@ -43,4 +43,14 @@ class Display:
 
     def paint(self, line: str) -> str:
         """Return ``line`` with every move coloured like its zone."""
-        raise NotImplementedError
+        if not self.enabled:
+            return line
+        painted: list[str] = []
+        for move in line.split():
+            zone = move.split("-")[-1]
+            start = self._start(self.network.zones[zone].color)
+            if start is None:
+                painted.append(move)
+            else:
+                painted.append(start + move + self.RESET)
+        return " ".join(painted)
