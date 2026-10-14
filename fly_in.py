@@ -22,7 +22,11 @@ class FlyIn:
             else:
                 simulation = Simulation(network, routes)
                 if visual:
-                    MapView(network, simulation).play()
+                    try:
+                        MapView(network, simulation).play()
+                    except KeyboardInterrupt:
+                        print()
+                        sys.exit(130)
                 else:
                     display = Display(network, sys.stdout.isatty())
                     for line in simulation.lines():

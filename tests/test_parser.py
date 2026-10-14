@@ -41,6 +41,13 @@ def test_hub_capacity_is_ignored() -> None:
     assert network.capacity("e") is None
 
 
+def test_windows_line_endings_are_accepted() -> None:
+    """A file with CRLF line endings parses like a normal one."""
+    network = MapParser().parse_file(str(VALID_MAPS / "crlf_line_endings.txt"))
+    assert network.end == "e"
+    assert network.link("s", "e").capacity == 1
+
+
 @pytest.mark.parametrize("name, line_nb, reason", [
     ("nb_drones_zero", 1, "nb_drones must be positive, got 0"),
     ("nb_drones_negative", 1, "nb_drones must be positive, got -4"),
@@ -88,6 +95,7 @@ def test_hub_capacity_is_ignored() -> None:
      "unexpected bracket in metadata block 'color=red]'"),
     ("meta_nested_bracket", 4,
      "unexpected bracket in metadata block 'zone=normal [color=red'"),
+    ("not_utf8", 3, "not valid UTF-8 text"),
 ])
 def test_broken_map(name: str, line_nb: int, reason: str) -> None:
     """Each broken map raises a ParseError naming the line and cause."""

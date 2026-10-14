@@ -14,9 +14,13 @@ class MapParser:
     def parse_file(self, path: str) -> Network:
         """Read the map at ``path`` and return its Network."""
         self._reset()
-        with open(path) as file:
-            for line_nb, line in enumerate(file, start=1):
-                self._parse_line(line_nb, line)
+        with open(path, "rb") as file:
+            for line_nb, raw in enumerate(file, start=1):
+                try:
+                    line = raw.decode("utf-8")
+                except UnicodeDecodeError:
+                    raise ParseError(line_nb, "not valid UTF-8 text")
+                self._parse_line(line_nb, line.rstrip("\r\n"))
         return self._build()
 
     def _reset(self) -> None:
