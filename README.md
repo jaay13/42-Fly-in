@@ -94,18 +94,24 @@ drone goes through priority zones whenever that costs no extra turn. A state
 reached again with fewer non-priority moves replaces the old one. This is
 safe, because all paths into `(zone, turn)` come from earlier turns, which
 are finished before that state leaves the heap. Counting non-priority moves
-also keeps routes free of pointless detours: on 300 random maps it never
-cost a turn compared with breaking ties by zone name.
+also keeps routes free of pointless detours. Planning stays greedy, one
+drone at a time, so a tie-break can shift later drones: against breaking
+ties by zone name it was equal on 300 of 300 random maps in one test, and
+better on 3 and worse on 1 of 877 in another.
 
 **Booking calendar.** Two dictionaries count how many drones use each slot:
 `zone_use[(zone, turn)]` and `link_use[(connection, turn)]`. After a drone's
 route is found, every slot it uses is booked, so later drones see only what
 is still free. Start and end zones have no limit.
 
-**Cost.** One search visits at most `zones × turns` states, each pushed once
-onto the heap, so planning `D` drones costs about
+**Cost.** One search visits at most `zones × turns` states. A state is
+pushed again only when it is reached with fewer non-priority moves, which
+happens a bounded number of times, so planning `D` drones costs about
 `O(D · Z · T · log(Z · T))`, where `T` is the last turn. Each drone is planned
-once; nothing is recomputed.
+once; nothing is recomputed. The subject maps plan in under 0.1 s; very large
+fleets are slower (1,000 drones on `ultimate_challenge` take about 40 s),
+because the searches of later drones cover many more free `(zone, turn)`
+slots.
 
 **Why this approach.** Planning drones one at a time keeps every search small
 and simple, and the calendar guarantees that no capacity is ever broken.
@@ -254,8 +260,9 @@ ended in a traceback, and priority zones that were not yet preferred.
 The priority tie-break was chosen by experiment, not by guess. Two variants
 ran against 300 random maps and were compared with the previous version,
 with an arbitrary tie-break as a control group. The first variant cost 1–2
-turns on 6 maps; the one now in the code cost none, and every subject map
-stayed at its optimum.
+turns on 6 maps; the one now in the code cost none there, and every subject
+map stayed at its optimum. A second, independent run on 1,000 random maps
+found it better on 3 and worse on 1, with no rule violations.
 
 **Who wrote what**
 

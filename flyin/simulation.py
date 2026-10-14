@@ -1,4 +1,4 @@
-"""Turn-by-turn simulation engine that enforces occupancy rules."""
+"""Turn planned routes into output lines and per-turn positions."""
 
 from flyin.graph import Network
 from flyin.scheduler import Route
