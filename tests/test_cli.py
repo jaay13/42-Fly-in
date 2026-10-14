@@ -81,6 +81,22 @@ def test_ctrl_c_stops_visual_without_traceback() -> None:
     assert "Traceback" not in stderr
 
 
+def test_ctrl_c_stops_planning_without_traceback(tmp_path: Path) -> None:
+    """Ctrl-C while a big map is still being planned exits with 130."""
+    source = (ROOT / "maps/hard/03_ultimate_challenge.txt").read_text()
+    big = tmp_path / "big.txt"
+    big.write_text(source.replace("nb_drones: 15", "nb_drones: 2000"))
+    process = subprocess.Popen(
+        [sys.executable, str(ROOT / "fly_in.py"), str(big)],
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    time.sleep(1)
+    process.send_signal(signal.SIGINT)
+    _, stderr = process.communicate(timeout=10)
+    assert process.returncode == 130
+    assert "Traceback" not in stderr
+
+
 def test_unknown_flag_prints_usage() -> None:
     """Any other third argument is rejected."""
     result = run("maps/easy/02_simple_fork.txt", "--oops")
