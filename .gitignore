@@ -14,3 +14,6 @@ __pycache__/
 # Subject material -- not ours to redistribute
 not_for_submission/
 .vscode/
+
+# Claude Code local settings
+.claude/
