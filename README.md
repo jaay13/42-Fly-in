@@ -207,44 +207,76 @@ restricted path so the others don't have to queue for the fast one.
 
 ### AI usage
 
-I used Claude Code (Anthropic) as an engineering tool with a deliberate
-setup, not as a code generator. The rule throughout: **I write the logic;
-the AI teaches, reviews and takes over the repetitive work.** All parsing,
-pathfinding and scheduling logic is my own.
+I used Claude Code (Anthropic) as an engineering team that I orchestrate,
+not as a chat box that writes code. I own the architecture and the core
+algorithm; agents get narrow roles and written briefs, run in parallel, and
+every result is checked by independent means before I act on it.
 
 **Setup**
 
-- **Rules file.** A `CLAUDE.md` sets the work split, commit conventions
-  and docstring style, so every session follows the same rules without
-  being told again.
-- **Specialised subagents.** The main session delegates focused jobs to
-  custom agents with narrow roles and limited tools, several in parallel.
-  Read-only review agents check each finished part before it is committed:
-  one for correctness and edge cases, one for design and naming
-  (`senior-dev`), and one that runs flake8 and mypy and quizzes me on my own
-  code so I can defend it (`42-mentor`). They report findings only; I decide
-  what to change and write the fixes.
-- **Context across sessions.** Custom `/vault-start` and `/vault-end`
-  commands load and save progress in a notes vault, and a checklist marks
+- **Rules as configuration.** A `CLAUDE.md` defines the work split, commit
+  conventions and docstring style, so every session and every agent follows
+  the same contract without being told again.
+- **Custom subagents with scoped tools.** Read-only reviewers that cannot
+  edit code: `42-mentor` (lint, types, error paths, and a quiz on my own
+  code so I can defend it) and `senior-dev` (design and naming), plus
+  general-purpose agents briefed for one task each.
+- **Persistent context.** `/vault-start` and `/vault-end` commands load and
+  save progress in a notes vault between sessions, and a checklist marks
   every task as mine or the AI's before work starts.
+- **Parallel threads.** Side questions run in forked sessions, so the main
+  task keeps going while they are answered.
 
-**What the AI did**
+**Multi-agent review before submission**
 
-- **Teaching:** interactive step-through pages for BFS versus DFS,
-  time-expanded search, the booking calendar and `heapq`, running on this
-  project's own code and maps.
-- **Reviews:** bugs and edge cases in my code, given as hints, not fixes.
-- **Repetitive work:** docstrings, flake8 and mypy fixes, the test suite and
-  test maps, and commit messages.
-- **Visuals:** the drawing code of the `--visual` terminal map (`MapView`,
-  built on my `Simulation.positions`) and the companion web page, including
-  the screenshots in this README.
+Four agents ran in parallel, each with its own brief and none allowed to
+change the repo:
+
+1. **Subject auditor:** turned the subject into 44 checks and marked each
+   pass or fail with `file:line` evidence.
+2. **Independent validator:** wrote its own rule checker from the subject
+   text alone, without importing my code, and ran the program on 344 maps:
+   the 10 subject maps, about 30 hand-made edge cases and 300 random ones. A
+   time-expanded max-flow model gave a lower bound on the best possible
+   turn count.
+3. **Defense reviewer:** ran lint and `mypy --strict`, tried every bad
+   input it could think of, and listed likely evaluator questions and live
+   modifications.
+4. **Transfer check:** cloned the repo fresh and ran install, lint and
+   tests on Python 3.10 and 3.13, as on the school machines.
+
+The four reports were merged into one, every finding was reproduced
+before anything changed, and the gaps they found were fixed: two inputs that
+ended in a traceback, and priority zones that were not yet preferred.
+
+**Decisions backed by data**
+
+The priority tie-break was chosen by experiment, not by guess. Two variants
+ran against 300 random maps and were compared with the previous version,
+with an arbitrary tie-break as a control group. The first variant cost 1–2
+turns on 6 maps; the one now in the code cost none, and every subject map
+stayed at its optimum.
+
+**Who wrote what**
+
+- **Mine:** the parser and its validation, the graph model, the BFS
+  reachability check, the search over `(zone, turn)` states, the booking
+  calendar, the scheduler and the simulation output.
+- **Written by Claude at my request and reviewed by me:** the priority
+  tie-break and the two crash fixes (Ctrl-C during `--visual`, non-UTF-8
+  map files).
+- **Claude:** interactive step-through pages that taught me BFS, `heapq`
+  and time-expanded search on this project's own code; the test suite and
+  test maps; docstrings, lint and type fixes; commit messages; the drawing
+  code of `--visual` (`MapView`, built on my `Simulation.positions`); the
+  companion web page; drafts of this README, checked against the real
+  program output.
 
 **Verification and traceability**
 
-- Nothing AI-made is taken on trust: changes are checked with the test
-  suite, flake8, `mypy --strict` and a run of every map against its known
-  optimum; screenshots are taken from the program's real output.
+- Nothing AI-made is taken on trust: every change passes the test suite,
+  flake8, `mypy --strict` and a run of every map against its known optimum,
+  and screenshots come from the program's real output.
 - Authorship is visible in the history: my code is committed on its own,
   and every commit with AI-written lines carries a `Co-Authored-By: Claude`
   trailer, so `git log` shows who wrote what.
