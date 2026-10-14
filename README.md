@@ -202,6 +202,13 @@ Claude (Anthropic) was used as a tutor and assistant:
   this project's own code and maps.
 - **Reviews:** pointing out bugs and edge cases in my code as hints, without
   writing the logic. All parsing, pathfinding and scheduling logic is my own.
+- **Agent workflow:** I worked in Claude Code with a main session that
+  hands focused jobs to subagents, several running in parallel. Read-only
+  review agents check finished parts before each commit: one reviews
+  correctness and edge cases, one reviews design and naming, and one checks
+  flake8 and mypy and quizzes me on my own code so I can defend it. The
+  review agents give findings only; I decide what to change and write the
+  fixes myself.
 - **Repetitive work:** docstrings, flake8 and mypy fixes, the test suite and
   test maps, and commit messages.
 - **Visuals:** the drawing code of the `--visual` terminal map
