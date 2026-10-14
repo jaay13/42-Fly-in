@@ -195,22 +195,44 @@ restricted path so the others don't have to queue for the fast one.
 
 ### AI usage
 
-Claude (Anthropic) was used as a tutor and assistant:
+I used Claude Code (Anthropic) as an engineering tool with a deliberate
+setup, not as a code generator. The rule throughout: **I write the logic;
+the AI teaches, reviews and takes over the repetitive work.** All parsing,
+pathfinding and scheduling logic is my own.
 
-- **Explanations:** BFS versus DFS, time-expanded search, the booking
-  calendar and `heapq`, through interactive step-through pages that run on
-  this project's own code and maps.
-- **Reviews:** pointing out bugs and edge cases in my code as hints, without
-  writing the logic. All parsing, pathfinding and scheduling logic is my own.
-- **Agent workflow:** I worked in Claude Code with a main session that
-  hands focused jobs to subagents, several running in parallel. Read-only
-  review agents check finished parts before each commit: one reviews
-  correctness and edge cases, one reviews design and naming, and one checks
-  flake8 and mypy and quizzes me on my own code so I can defend it. The
-  review agents give findings only; I decide what to change and write the
-  fixes myself.
+**Setup**
+
+- **Rules file.** A `CLAUDE.md` sets the work split, commit conventions
+  and docstring style, so every session follows the same rules without
+  being told again.
+- **Specialised subagents.** The main session delegates focused jobs to
+  custom agents with narrow roles and limited tools, several in parallel.
+  Read-only review agents check each finished part before it is committed:
+  one for correctness and edge cases, one for design and naming
+  (`senior-dev`), and one that runs flake8 and mypy and quizzes me on my own
+  code so I can defend it (`42-mentor`). They report findings only; I decide
+  what to change and write the fixes.
+- **Context across sessions.** Custom `/vault-start` and `/vault-end`
+  commands load and save progress in a notes vault, and a checklist marks
+  every task as mine or the AI's before work starts.
+
+**What the AI did**
+
+- **Teaching:** interactive step-through pages for BFS versus DFS,
+  time-expanded search, the booking calendar and `heapq`, running on this
+  project's own code and maps.
+- **Reviews:** bugs and edge cases in my code, given as hints, not fixes.
 - **Repetitive work:** docstrings, flake8 and mypy fixes, the test suite and
   test maps, and commit messages.
-- **Visuals:** the drawing code of the `--visual` terminal map
-  (`MapView`, built on my `Simulation.positions`) and the companion web
-  page, including the screenshots in this README.
+- **Visuals:** the drawing code of the `--visual` terminal map (`MapView`,
+  built on my `Simulation.positions`) and the companion web page, including
+  the screenshots in this README.
+
+**Verification and traceability**
+
+- Nothing AI-made is taken on trust: changes are checked with the test
+  suite, flake8, `mypy --strict` and a run of every map against its known
+  optimum; screenshots are taken from the program's real output.
+- Authorship is visible in the history: my code is committed on its own,
+  and every commit with AI-written lines carries a `Co-Authored-By: Claude`
+  trailer, so `git log` shows who wrote what.
