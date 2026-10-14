@@ -23,7 +23,9 @@ without breaking any capacity, and prints the simulation turn by turn. It
 reaches the known optimum on every map that ships with the subject,
 including the bonus challenger map (43 turns).
 
-![Capacity hell, turn 8 of 16, in the companion web page](docs/img/showcase-overview.png)
+**Live demo:** [fly-in-showcase.vercel.app](https://fly-in-showcase.vercel.app)
+
+[![Capacity hell, turn 8 of 16, in the companion web page](docs/img/showcase-overview.png)](https://fly-in-showcase.vercel.app)
 
 ### What I learned
 
@@ -134,8 +136,10 @@ waiting and queuing visible, which the text output only implies.
 
 ![Terminal animation with --visual](docs/img/terminal-visual.png)
 
-**Companion web page.** A separate page (repository `fly-in-showcase`, not
-part of this submission) draws the same routes as a transit diagram and
+**Companion web page.** A separate page,
+[fly-in-showcase.vercel.app](https://fly-in-showcase.vercel.app) (repository
+`fly-in-showcase`, not part of this submission), draws the same routes as a
+transit diagram and
 explains every turn in words. It runs this `flyin` package unchanged in the
 browser through Pyodide, so you can also edit a map and plan it there.
 
