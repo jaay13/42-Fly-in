@@ -111,6 +111,18 @@ def test_search_prefers_earlier_arrival_over_restricted() -> None:
     assert s._search() == [("s", 0), ("a", 1), ("g", 2)]
 
 
+def test_search_prefers_priority_zones_on_ties() -> None:
+    """Of two routes arriving on the same turn, the priority one wins."""
+    s = scheduler_for(VALID_MAPS / "priority_tie.txt")
+    assert s._search() == [("s", 0), ("p1", 1), ("p2", 2), ("g", 3)]
+
+
+def test_priority_never_costs_a_turn() -> None:
+    """A longer route through priority zones loses to an earlier one."""
+    s = scheduler_for(VALID_MAPS / "priority_detour.txt")
+    assert s._search() == [("s", 0), ("a", 1), ("g", 2)]
+
+
 def test_plan_gives_one_route_per_drone() -> None:
     """Every drone gets a route from start to end."""
     s = scheduler_for(FORK)

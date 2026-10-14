@@ -1,0 +1,12 @@
+# Priority route s-p1-p2-g (turn 3) loses to s-a-g (turn 2).
+nb_drones: 1
+start_hub: s 0 0
+hub: a 1 0
+hub: p1 1 1 [zone=priority]
+hub: p2 2 1 [zone=priority]
+end_hub: g 3 0
+connection: s-a
+connection: a-g
+connection: s-p1
+connection: p1-p2
+connection: p2-g

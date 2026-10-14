@@ -41,12 +41,15 @@ class Scheduler:
         return path[::-1]
 
     def _search(self) -> Route:
-        """Return the earliest-arriving route for the next drone."""
+        """Return the earliest route, avoiding non-priority zones on ties."""
         start: State = (self.network.start, 0)
-        queue: list[tuple[int, str]] = [(0, self.network.start)]
+        queue: list[tuple[int, int, str]] = [(0, 0, self.network.start)]
         came_from: dict[State, State | None] = {start: None}
+        normal_steps: dict[State, int] = {start: 0}
         while queue:
-            turn, zone = heapq.heappop(queue)
+            turn, steps, zone = heapq.heappop(queue)
+            if steps > normal_steps[(zone, turn)]:
+                continue
             if zone == self.network.end:
                 return self._build_route(came_from, (zone, turn))
 
@@ -58,7 +61,12 @@ class Scheduler:
                 moves.append((neighbor, turn + cost))
             for state in moves:
                 nxt, nxt_turn = state
-                if state in came_from:
+                nxt_steps = steps
+                if nxt != zone and (
+                    self.network.zones[nxt].zone_type is not ZoneType.PRIORITY
+                ):
+                    nxt_steps += 1
+                if normal_steps.get(state, nxt_steps + 1) <= nxt_steps:
                     continue
                 if not self._zone_has_room(nxt, nxt_turn):
                     continue
@@ -67,7 +75,8 @@ class Scheduler:
                 ):
                     continue
                 came_from[state] = (zone, turn)
-                heapq.heappush(queue, (nxt_turn, nxt))
+                normal_steps[state] = nxt_steps
+                heapq.heappush(queue, (nxt_turn, nxt_steps, nxt))
         raise NotImplementedError
 
     def _zone_has_room(self, zone: str, turn: int) -> bool:
