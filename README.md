@@ -143,10 +143,13 @@ text, and unknown colour names are printed without colour.
 
 **`--visual`.** Redraws the map in the terminal every 0.7 seconds, one frame
 per turn. Zones sit at their map coordinates. Under each zone, one dot per
-place shows how full it is (filled = drone, red = full). `»n` marks drones in
-flight to a restricted zone, and `×` marks a blocked zone. The header shows
-the turn, the delivered count and that turn's output line. This makes
-waiting and queuing visible, which the text output only implies.
+place shows how full it is (filled = drone, red = full); a zone with more
+places than fit under its name shows `count/capacity` instead, and the start
+and end hubs, which have no limit, show `●n` for the drones in them. `»n`
+marks drones in flight to a restricted zone, and `✕` marks a blocked zone.
+The header shows the turn, the delivered count and that turn's output
+line. This makes waiting and queuing visible, which the text output only
+implies.
 
 ![Terminal animation with --visual](docs/img/terminal-visual.png)
 
