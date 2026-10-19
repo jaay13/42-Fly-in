@@ -16,6 +16,10 @@ class MapView:
     """Terminal drawing of the network with drones placed turn by turn."""
 
     ROW_STEP = 4
+    MIN_COL_STEP = 5
+    MAX_COL_STEP = 16
+    FALLBACK_SIZE = (100, 30)
+    FRAME_DELAY = 0.7
     DIM = "\033[38;5;240m"
     FULL = "\033[1;38;5;196m"
     FLIGHT = "\033[1;38;5;226m"
@@ -34,13 +38,14 @@ class MapView:
         ys = [zone.y for zone in network.zones.values()]
         self.x0 = min(xs)
         self.y1 = max(ys)
-        width = shutil.get_terminal_size((100, 30)).columns
+        width = shutil.get_terminal_size(self.FALLBACK_SIZE).columns
         span = max(xs) - self.x0 + 1
-        self.col_step = max(5, min(16, (width - 2) // span))
+        self.col_step = max(self.MIN_COL_STEP,
+                            min(self.MAX_COL_STEP, (width - 2) // span))
         self.width = span * self.col_step + 2
         self.height = (self.y1 - min(ys)) * self.ROW_STEP + 3
 
-    def play(self, delay: float = 0.7) -> None:
+    def play(self, delay: float = FRAME_DELAY) -> None:
         """Clear the screen and draw every turn, one after another."""
         for turn in range(len(self.lines) + 1):
             sys.stdout.write(self.CLEAR + self.frame(turn) + "\n")
