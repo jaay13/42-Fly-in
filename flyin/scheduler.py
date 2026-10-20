@@ -2,6 +2,7 @@
 
 import heapq
 
+from flyin.errors import UnsolvableError
 from flyin.graph import Network
 from flyin.models import ZoneType
 from flyin.pathfinder import Pathfinder
@@ -77,7 +78,8 @@ class Scheduler:
                 came_from[state] = (zone, turn)
                 normal_steps[state] = nxt_steps
                 heapq.heappush(queue, (nxt_turn, nxt_steps, nxt))
-        raise NotImplementedError
+        raise UnsolvableError(
+            f"no path from {self.network.start!r} to {self.network.end!r}")
 
     def _zone_has_room(self, zone: str, turn: int) -> bool:
         """Return True if ``zone`` can take one more drone at ``turn``."""
