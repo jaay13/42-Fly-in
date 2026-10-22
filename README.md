@@ -2,6 +2,13 @@
 
 # Fly-in
 
+[![Live demo](https://img.shields.io/badge/live_demo-fly--in--showcase.vercel.app-2ea44f?style=for-the-badge)](https://fly-in-showcase.vercel.app)
+
+Watch every map play out turn by turn, or build your own map and solve it
+in the browser.
+
+[![Capacity hell, turn 8 of 16, in the companion web page](docs/img/showcase-overview.png)](https://fly-in-showcase.vercel.app)
+
 ## Description
 
 Fly-in routes a fleet of drones from a start hub to an end hub through a
@@ -22,10 +29,6 @@ The program parses and validates the map, plans a route for every drone
 without breaking any capacity, and prints the simulation turn by turn. It
 reaches the known optimum on every map that ships with the subject,
 including the bonus challenger map (43 turns).
-
-**Live demo:** [fly-in-showcase.vercel.app](https://fly-in-showcase.vercel.app)
-
-[![Capacity hell, turn 8 of 16, in the companion web page](docs/img/showcase-overview.png)](https://fly-in-showcase.vercel.app)
 
 ### What I learned
 
